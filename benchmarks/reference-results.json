@@ -1,0 +1,15 @@
+{
+  "environment": "Codex reference container, 2026-08-11",
+  "records": 5000,
+  "queries": 200,
+  "embedding_provider": "hashing-v1",
+  "embedding_dimensions": 192,
+  "hit_at_5": 1.0,
+  "writes_per_second": 445.8443076300943,
+  "write_p50_ms": 1.4125990001048194,
+  "write_p95_ms": 2.912927999659587,
+  "recall_mean_ms": 17.166326789997584,
+  "recall_p50_ms": 16.917591000037646,
+  "recall_p95_ms": 29.1309510002975,
+  "recall_p99_ms": 32.92874499993559
+}

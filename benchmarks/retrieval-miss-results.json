@@ -1,0 +1,17 @@
+{
+  "environment": "Codex reference container, 2026-08-11",
+  "legacy_hits": 0,
+  "improved_hits": 6,
+  "total_cases": 6,
+  "improved_recall": 1.0,
+  "suite_latency_mean_ms": 1.1995338333387433,
+  "suite_latency_max_ms": 3.446076000273024,
+  "cases": [
+    "candidate_source_saturation",
+    "morphological_variation",
+    "entity_alias",
+    "adaptive_exact_vector_fallback",
+    "linked_source_evidence",
+    "one_bit_lsh_neighbor"
+  ]
+}

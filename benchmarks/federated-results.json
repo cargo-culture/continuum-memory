@@ -1,0 +1,36 @@
+{
+  "environment": "Codex reference container, 2026-08-12",
+  "books": 4,
+  "records_per_book": 1000,
+  "total_records": 4000,
+  "embedding_provider": "hashing-v1",
+  "embedding_dimensions": 192,
+  "average_record_tokens": 21.0,
+  "addressable_content_tokens": 84000.0,
+  "writes_per_second": 507.07734261619396,
+  "routed_three_books": {
+    "queries": 100,
+    "hit_at_5": 1.0,
+    "mean_ms": 78.32613445001698,
+    "p50_ms": 78.76365400034047,
+    "p95_ms": 95.7683609999549,
+    "p99_ms": 123.29854100016746
+  },
+  "all_books_concurrent": {
+    "queries": 100,
+    "hit_at_5": 1.0,
+    "mean_ms": 105.95240554004704,
+    "p50_ms": 109.10586799991506,
+    "p95_ms": 137.41247000007206,
+    "p99_ms": 156.82539699992049
+  },
+  "all_books_sequential": {
+    "queries": 100,
+    "hit_at_5": 1.0,
+    "mean_ms": 173.48280648001037,
+    "p50_ms": 174.34305999995559,
+    "p95_ms": 213.15647199980958,
+    "p99_ms": 242.4128530001326
+  },
+  "concurrent_p95_reduction_percent": 35.53446033757079
+}

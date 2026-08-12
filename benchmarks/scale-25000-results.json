@@ -1,0 +1,21 @@
+{
+  "environment": "Codex reference container, 2026-08-11",
+  "records": 25000,
+  "queries": 100,
+  "embedding_provider": "hashing-v1",
+  "embedding_dimensions": 192,
+  "hit_at_5": 1.0,
+  "writes_per_second": 227.52094173224555,
+  "write_p50_ms": 3.446341999733704,
+  "write_p95_ms": 7.978956999977527,
+  "recall_mean_ms": 51.43452581001384,
+  "recall_p50_ms": 44.49095699965255,
+  "recall_p95_ms": 102.06760100027168,
+  "recall_p99_ms": 104.25063499997123,
+  "exact_scan_queries": 20,
+  "exact_scan_hit_at_5": 1.0,
+  "exact_scan_mean_ms": 441.41267075003725,
+  "exact_scan_p50_ms": 427.6760610000565,
+  "exact_scan_p95_ms": 507.279176999873,
+  "exact_scan_p99_ms": 559.8604470001192
+}
