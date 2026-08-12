@@ -1,0 +1,29 @@
+{
+  "name": "continuum-memory",
+  "version": "0.4.0",
+  "description": "Persistent, specialized memory books for ChatGPT and Codex.",
+  "author": {
+    "name": "cargo-culture",
+    "url": "https://github.com/cargo-culture"
+  },
+  "homepage": "https://github.com/cargo-culture/continuum-memory",
+  "repository": "https://github.com/cargo-culture/continuum-memory",
+  "license": "MIT",
+  "keywords": ["memory", "continuity", "retrieval", "mcp", "context"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Continuum Memory",
+    "shortDescription": "Persistent searchable memory for AI work",
+    "longDescription": "Search specialized memory books, inspect provenance, preserve durable information, and supersede obsolete claims across ChatGPT and Codex sessions.",
+    "developerName": "cargo-culture",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/cargo-culture/continuum-memory",
+    "defaultPrompt": [
+      "Use Continuum Memory to recall the decisions and constraints relevant to this request.",
+      "Remember this durable project decision in the appropriate Continuum book."
+    ],
+    "brandColor": "#315C66"
+  }
+}

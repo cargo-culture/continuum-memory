@@ -1,0 +1,6 @@
+interface:
+  display_name: "Continuum Memory"
+  short_description: "Recall and preserve durable context"
+  default_prompt: "Use $continuum-memory to recall relevant prior decisions before answering."
+policy:
+  allow_implicit_invocation: true

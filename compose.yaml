@@ -1,0 +1,20 @@
+services:
+  continuum-memory:
+    build: .
+    image: continuum-memory:0.4.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      CONTINUUM_LIBRARY_DIR: /var/lib/continuum/books
+      CONTINUUM_MCP_ISSUER_URL: ${CONTINUUM_MCP_ISSUER_URL:?required}
+      CONTINUUM_MCP_RESOURCE_URL: ${CONTINUUM_MCP_RESOURCE_URL:?required}
+      CONTINUUM_MCP_INTROSPECTION_URL: ${CONTINUUM_MCP_INTROSPECTION_URL:?required}
+      CONTINUUM_MCP_INTROSPECTION_CLIENT_ID: ${CONTINUUM_MCP_INTROSPECTION_CLIENT_ID:-}
+      CONTINUUM_MCP_INTROSPECTION_CLIENT_SECRET: ${CONTINUUM_MCP_INTROSPECTION_CLIENT_SECRET:-}
+      CONTINUUM_OPENAI_CHALLENGE_TOKEN: ${CONTINUUM_OPENAI_CHALLENGE_TOKEN:-}
+    volumes:
+      - continuum-data:/var/lib/continuum
+
+volumes:
+  continuum-data:

@@ -20,6 +20,8 @@ It expands a model's **effective** context. It does not alter the model's native
 - Deterministic and schema-constrained OpenAI consolidation adapters
 - Behavioral policy states: candidate, testing, promoted, and retired
 - CLI and dependency-free local JSON HTTP API
+- OpenAI-compatible plugin package with a bundled skill and MCP server
+- OAuth-isolated Streamable HTTP deployment for ChatGPT
 - Federated specialized memory books with persisted routing metadata
 - Concurrent per-book retrieval, cross-book fusion, deduplication, and global budgeting
 - Reproducible functional tests and synthetic recall benchmark
@@ -55,6 +57,21 @@ continuum-memory --namespace demo library-recall \
 ```
 
 The standard router searches `working` and `identity` for continuity plus the strongest topical book. Selected books use separate SQLite connections and run concurrently. Results are deduplicated and fused into one globally budgeted context packet. See [Federated memory books](docs/FEDERATED_BOOKS.md).
+
+## ChatGPT and Codex plugin
+
+Continuum 0.4.0 includes a plugin manifest, a memory-use skill, and an MCP server:
+
+```bash
+pip install -e '.[plugin]'
+continuum-memory-mcp --transport stdio
+```
+
+The MCP surface exposes focused tools for search, provenance expansion, book listing, durable writes, and supersession. The model never supplies a namespace: local installs use `CONTINUUM_NAMESPACE`, while authenticated HTTP deployments derive an opaque namespace from the verified OAuth identity.
+
+For ChatGPT, deploy the server through authenticated Streamable HTTP and register the public `/mcp` endpoint in developer mode. See [OpenAI plugin integration](docs/PLUGIN.md).
+
+A production Dockerfile, persistent-volume Compose service, GitHub Actions verification, tagged GHCR publishing, policy pages, domain-verification route, and a review-ready [submission packet](docs/SUBMISSION.md) are included.
 
 The default hashing embedder is fast, deterministic, and offline. It provides lexical-neighborhood vectors for development and testing.
 
@@ -202,5 +219,6 @@ The four-book benchmark retained `1.000` hit@5. Router-selected three-book retri
 - [Research and evaluation plan](docs/RESEARCH_PLAN.md)
 - [Retrieval hardening](docs/RETRIEVAL_HARDENING.md)
 - [Federated memory books](docs/FEDERATED_BOOKS.md)
+- [OpenAI plugin integration](docs/PLUGIN.md)
 
 The OpenAI adapter follows the official [embeddings](https://developers.openai.com/api/docs/guides/embeddings) and [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) patterns.
