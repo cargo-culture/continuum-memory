@@ -1,0 +1,10 @@
+{
+  "continuum-memory": {
+    "command": "continuum-memory-mcp",
+    "args": ["--transport", "stdio"],
+    "env": {
+      "CONTINUUM_LIBRARY_DIR": "${PLUGIN_DATA}/books",
+      "CONTINUUM_NAMESPACE": "local"
+    }
+  }
+}

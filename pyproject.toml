@@ -4,20 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "continuum-memory"
-version = "0.3.0"
+version = "0.4.0"
 description = "A local-first persistent memory substrate for language models"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "Continuum Memory contributors"}]
 dependencies = []
 
 [project.optional-dependencies]
 openai = ["openai>=1.66", "pydantic>=2.8"]
-dev = ["pytest>=8.0", "pydantic>=2.8"]
+plugin = ["mcp>=2.0,<3"]
+dev = ["pytest>=8.0", "pydantic>=2.8", "mcp>=2.0,<3"]
 
 [project.scripts]
 continuum-memory = "continuum_memory.cli:main"
+continuum-memory-mcp = "continuum_memory.mcp_server:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

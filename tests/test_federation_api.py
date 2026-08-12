@@ -93,7 +93,7 @@ class FederationApiTests(unittest.TestCase):
 
         status, page = self.request(
             "GET",
-            f"/v1/books/projects/pages/{memory['id']}",
+            f"/v1/books/projects/pages/{memory['id']}?namespace=api-test",
         )
         self.assertEqual(200, status)
         self.assertEqual(memory["id"], page["memory"]["id"])

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Continuum Memory</title>
+  <desc id="desc">Interlocking teal loops representing durable connected memory.</desc>
+  <rect width="512" height="512" rx="112" fill="#17383F"/>
+  <path d="M126 256c0-66 48-112 108-112 42 0 70 22 94 57l58 86c12 18 25 29 42 29 23 0 40-21 40-60s-17-60-40-60c-18 0-32 13-48 37l-39-57c23-30 50-48 87-48 59 0 98 51 98 128s-39 128-98 128c-43 0-72-24-96-59l-58-86c-12-18-24-27-40-27-24 0-42 20-42 60s18 60 42 60c18 0 32-12 48-36l39 58c-24 29-51 46-87 46-61 0-108-46-108-112Z" fill="#8FE3D5" transform="translate(-50 0)"/>
+</svg>

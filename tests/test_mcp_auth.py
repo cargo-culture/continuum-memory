@@ -1,0 +1,86 @@
+from __future__ import annotations
+
+import unittest
+from unittest.mock import patch
+
+from continuum_memory.mcp_auth import IntrospectionTokenVerifier
+
+
+class _Response:
+    status_code = 200
+
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def json(self) -> dict:
+        return self.payload
+
+
+class _Client:
+    payload: dict = {}
+
+    def __init__(self, **_kwargs) -> None:
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *_args):
+        return None
+
+    async def post(self, *_args, **_kwargs):
+        return _Response(self.payload)
+
+
+class MCPAuthTests(unittest.IsolatedAsyncioTestCase):
+    async def test_introspection_binds_subject_issuer_audience_and_scopes(self) -> None:
+        _Client.payload = {
+            "active": True,
+            "sub": "alice",
+            "client_id": "chatgpt",
+            "aud": ["https://memory.example.com/mcp"],
+            "scope": "memory:read memory:write",
+            "exp": 2_000_000_000,
+        }
+        verifier = IntrospectionTokenVerifier(
+            endpoint="https://auth.example.com/introspect",
+            issuer_url="https://auth.example.com/",
+            resource_url="https://memory.example.com/mcp",
+        )
+        with patch("httpx2.AsyncClient", _Client):
+            token = await verifier.verify_token("opaque-token")
+        self.assertIsNotNone(token)
+        self.assertEqual("alice", token.subject)
+        self.assertEqual("https://auth.example.com/", token.claims["iss"])
+        self.assertIn("memory:write", token.scopes)
+
+    async def test_introspection_rejects_wrong_audience_or_issuer(self) -> None:
+        verifier = IntrospectionTokenVerifier(
+            endpoint="https://auth.example.com/introspect",
+            issuer_url="https://auth.example.com/",
+            resource_url="https://memory.example.com/mcp",
+        )
+        for payload in (
+            {"active": True, "sub": "alice", "aud": "https://other.example.com/mcp"},
+            {
+                "active": True,
+                "sub": "alice",
+                "aud": "https://memory.example.com/mcp",
+                "iss": "https://evil.example.com/",
+            },
+        ):
+            _Client.payload = payload
+            with patch("httpx2.AsyncClient", _Client):
+                self.assertIsNone(await verifier.verify_token("opaque-token"))
+
+    def test_introspection_endpoint_requires_https(self) -> None:
+        with self.assertRaises(ValueError):
+            IntrospectionTokenVerifier(
+                endpoint="http://auth.example.com/introspect",
+                issuer_url="https://auth.example.com/",
+                resource_url="https://memory.example.com/mcp",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()

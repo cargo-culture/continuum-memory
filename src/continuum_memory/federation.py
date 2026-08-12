@@ -413,8 +413,39 @@ class FederatedMemoryService:
             replace(value, metadata={**value.metadata, "continuum_book_id": book_id})
         )
 
-    def page(self, book_id: str, memory_id: str) -> MemoryPage:
-        return self._require_runtime(book_id).service.page(memory_id)
+    def page(
+        self,
+        book_id: str,
+        memory_id: str,
+        *,
+        namespace: str | None = None,
+    ) -> MemoryPage:
+        page = self._require_runtime(book_id).service.page(memory_id)
+        if namespace is not None and page.memory.namespace != namespace:
+            raise KeyError(f"memory not found: {memory_id}")
+        return page
+
+    def supersede(
+        self,
+        book_id: str,
+        memory_id: str,
+        new_content: str,
+        *,
+        namespace: str,
+        confidence: float | None = None,
+        source_uri: str | None = None,
+    ) -> MemoryRecord:
+        runtime = self._require_runtime(book_id)
+        old = runtime.service.store.get_memory(memory_id)
+        if old is None or old.namespace != namespace:
+            raise KeyError(f"memory not found: {memory_id}")
+        return runtime.service.supersede(
+            memory_id,
+            new_content,
+            confidence=confidence,
+            source_uri=source_uri,
+            metadata={"continuum_book_id": book_id, "recorded_via": "openai-plugin"},
+        )
 
     def route(
         self,

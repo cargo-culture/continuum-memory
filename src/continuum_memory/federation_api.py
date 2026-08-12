@@ -17,7 +17,7 @@ BOOK_PAGE_PATH = re.compile(r"^/v1/books/([^/]+)/pages/([^/]+)$")
 
 def make_federation_handler(service: FederatedMemoryService):
     class FederationRequestHandler(BaseHTTPRequestHandler):
-        server_version = "ContinuumMemory/0.3.0"
+        server_version = "ContinuumMemory/0.4.0"
         max_body_bytes = 2_500_000
 
         def _send(self, status: int, payload: dict[str, Any] | list[Any]) -> None:
@@ -60,7 +60,11 @@ def make_federation_handler(service: FederatedMemoryService):
                     return
                 page_match = BOOK_PAGE_PATH.match(path)
                 if page_match:
-                    page = service.page(page_match.group(1), page_match.group(2))
+                    page = service.page(
+                        page_match.group(1),
+                        page_match.group(2),
+                        namespace=namespace,
+                    )
                     self._send(HTTPStatus.OK, page.to_dict())
                     return
                 self._send(HTTPStatus.NOT_FOUND, {"error": "not_found"})
