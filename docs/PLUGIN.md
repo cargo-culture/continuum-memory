@@ -24,6 +24,8 @@ A memory tool that returns more context than it reports is worse than no memory 
 
 Every returned record carries `is_excerpt` and `full_token_count`, so a caller can tell whether it is holding the whole record and what expanding it would cost.
 
+`used_tokens` accounts for the retrieval budget, which is charged against memory text alone. `response_tokens` reports the serialized response with its envelope, which is what the caller actually pays. Both `search_memory` and `read_memory` return it.
+
 ## Local development
 
 Install the plugin extra and initialize the standard books:

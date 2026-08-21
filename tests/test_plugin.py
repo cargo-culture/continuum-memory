@@ -90,8 +90,12 @@ class PluginAdapterTests(unittest.TestCase):
             self.assertGreater(
                 memory["full_token_count"], approximate_token_count(memory["content"])
             )
-        serialized = approximate_token_count(json.dumps(result))
+        serialized = approximate_token_count(json.dumps(result, ensure_ascii=False))
         self.assertLessEqual(serialized, result["token_budget"])
+        # used_tokens charges memory text only; response_tokens is what the
+        # caller actually pays, and must describe the response that was sent.
+        self.assertGreater(result["response_tokens"], result["used_tokens"])
+        self.assertAlmostEqual(serialized, result["response_tokens"], delta=16)
 
     def test_search_token_budget_is_capped(self) -> None:
         self.adapter.remember_memory(

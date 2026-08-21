@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any, Sequence
 
@@ -66,6 +67,12 @@ def _public_memory(memory: MemoryRecord, *, body: str, max_tokens: int) -> dict[
     }
 
 
+def _response_tokens(payload: dict[str, Any]) -> int:
+    # Measured before the field itself is added, so it understates by the few
+    # tokens that field costs.
+    return approximate_token_count(json.dumps(payload, ensure_ascii=False))
+
+
 def _stored_memory(memory: MemoryRecord) -> dict[str, Any]:
     return _public_memory(memory, body=memory.content, max_tokens=RECORD_EXCERPT_TOKENS)
 
@@ -90,7 +97,7 @@ def _public_hit(hit: FederatedRecallHit) -> dict[str, Any]:
 
 def _public_page(book_id: str, page: MemoryPage) -> dict[str, Any]:
     shown = page.source_memories[:PAGE_SOURCE_LIMIT]
-    return {
+    payload = {
         "book_id": book_id,
         "memory": _public_memory(
             page.memory, body=page.memory.content, max_tokens=RECORD_EXCERPT_TOKENS
@@ -113,6 +120,8 @@ def _public_page(book_id: str, page: MemoryPage) -> dict[str, Any]:
         "source_memory_count": len(page.source_memory_ids),
         "trust_notice": TRUST_NOTICE,
     }
+    payload["response_tokens"] = _response_tokens(payload)
+    return payload
 
 
 @dataclass(slots=True)
@@ -145,7 +154,7 @@ class ContinuumPluginAdapter:
             token_budget=min(token_budget, MAX_TOKEN_BUDGET),
             context_entities=context_entities,
         )
-        return {
+        payload = {
             "retrieval_id": packet.retrieval_id,
             "trust_notice": TRUST_NOTICE,
             "used_tokens": packet.used_tokens,
@@ -156,6 +165,12 @@ class ContinuumPluginAdapter:
             "failures": packet.failures,
             "memories": [_public_hit(hit) for hit in packet.hits],
         }
+        # used_tokens accounts for the retrieval budget, which is charged
+        # against memory text alone. What the caller actually pays is the
+        # serialized response, envelope included, so report that too rather
+        # than leaving the difference for them to discover.
+        payload["response_tokens"] = _response_tokens(payload)
+        return payload
 
     def read_memory(
         self,
