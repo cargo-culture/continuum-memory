@@ -13,8 +13,15 @@ from html import escape
 from pathlib import Path
 from typing import Any, Sequence
 
+from .consolidation import Consolidator
 from .embeddings import EmbeddingProvider
-from .models import MemoryInput, MemoryPage, MemoryRecord, RecallFeatures
+from .models import (
+    ConsolidationResult,
+    MemoryInput,
+    MemoryPage,
+    MemoryRecord,
+    RecallFeatures,
+)
 from .service import MemoryService
 from .store import SQLiteMemoryStore
 from .utils import approximate_token_count, clamp, normalize_vector, timestamp_to_iso, tokenize
@@ -419,11 +426,30 @@ class FederatedMemoryService:
         memory_id: str,
         *,
         namespace: str | None = None,
+        source_limit: int | None = None,
     ) -> MemoryPage:
-        page = self._require_runtime(book_id).service.page(memory_id)
+        page = self._require_runtime(book_id).service.page(memory_id, source_limit=source_limit)
         if namespace is not None and page.memory.namespace != namespace:
             raise KeyError(f"memory not found: {memory_id}")
         return page
+
+    def consolidate(
+        self,
+        book_id: str,
+        *,
+        namespace: str = "default",
+        consolidator: Consolidator | None = None,
+        limit: int = 50,
+        since: float | None = None,
+    ) -> ConsolidationResult:
+        """Consolidate one book. Books are independent stores, so a batch never
+        spans them and each book is summarized in its own terms."""
+        return self._require_runtime(book_id).service.consolidate(
+            namespace=namespace,
+            consolidator=consolidator,
+            limit=limit,
+            since=since,
+        )
 
     def supersede(
         self,

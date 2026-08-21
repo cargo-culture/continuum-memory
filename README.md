@@ -60,7 +60,7 @@ The standard router searches `working` and `identity` for continuity plus the st
 
 ## ChatGPT and Codex plugin
 
-Continuum 0.4.0 includes a plugin manifest, a memory-use skill, and an MCP server:
+Continuum 0.5.0 includes a plugin manifest, a memory-use skill, and an MCP server:
 
 ```bash
 pip install -e '.[plugin]'
@@ -68,6 +68,8 @@ continuum-memory-mcp --transport stdio
 ```
 
 The MCP surface exposes focused tools for search, provenance expansion, book listing, durable writes, and supersession. The model never supplies a namespace: local installs use `CONTINUUM_NAMESPACE`, while authenticated HTTP deployments derive an opaque namespace from the verified OAuth identity.
+
+Tool responses are bounded and report their own size. Search returns budgeted excerpts, `read_memory` expands one record with a capped provenance fan-out, and every record carries `is_excerpt` and `full_token_count`.
 
 For ChatGPT, deploy the server through authenticated Streamable HTTP and register the public `/mcp` endpoint in developer mode. See [OpenAI plugin integration](docs/PLUGIN.md).
 

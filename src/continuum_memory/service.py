@@ -211,7 +211,14 @@ class MemoryService:
             query_vector=query_vector,
         )
 
-    def page(self, memory_id: str) -> MemoryPage:
+    def page(self, memory_id: str, *, source_limit: int | None = None) -> MemoryPage:
+        """Expand one memory with its provenance.
+
+        A consolidated summary can link to every memory in its batch, so
+        `source_limit` bounds how many source records are actually loaded.
+        The complete id list is always returned, so a caller that needs a
+        capped-out source can read it as a page of its own.
+        """
         memory = self.store.get_memory(memory_id)
         if memory is None:
             raise KeyError(f"memory not found: {memory_id}")
@@ -222,11 +229,13 @@ class MemoryService:
             for link in outgoing
             if link["link_type"] in {"summarizes", "derived_from", "supported_by"}
         ]
+        loaded_ids = source_ids if source_limit is None else source_ids[:source_limit]
         return MemoryPage(
             memory=memory,
             outgoing_links=outgoing,
             incoming_links=incoming,
-            source_memories=self.store.get_memories(source_ids),
+            source_memories=self.store.get_memories(loaded_ids),
+            source_memory_ids=source_ids,
         )
 
     def consolidate(

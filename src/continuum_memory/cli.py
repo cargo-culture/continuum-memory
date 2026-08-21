@@ -156,6 +156,16 @@ def build_parser() -> argparse.ArgumentParser:
     book_page.add_argument("book_id")
     book_page.add_argument("memory_id")
 
+    book_consolidate = subparsers.add_parser(
+        "book-consolidate", help="build hierarchical summaries inside one memory book"
+    )
+    book_consolidate.add_argument("book_id")
+    book_consolidate.add_argument(
+        "--provider", choices=("deterministic", "openai"), default="deterministic"
+    )
+    book_consolidate.add_argument("--limit", type=int, default=50)
+    book_consolidate.add_argument("--since", type=float)
+
     serve_library = subparsers.add_parser("serve-library", help="run the federated JSON API")
     serve_library.add_argument("--host", default="127.0.0.1")
     serve_library.add_argument("--port", type=int, default=8765)
@@ -170,12 +180,13 @@ FEDERATED_COMMANDS = {
     "library-recall",
     "library-context",
     "book-page",
+    "book-consolidate",
     "serve-library",
 }
 
 
 def _run_federated(args: argparse.Namespace) -> int:
-    library, _settings = create_federated_service(
+    library, settings = create_federated_service(
         library_dir=args.library_dir,
         embedding_provider=args.embedding_provider,
         embedding_model=args.embedding_model,
@@ -237,6 +248,21 @@ def _run_federated(args: argparse.Namespace) -> int:
                     )
         elif args.command == "book-page":
             _json(library.page(args.book_id, args.memory_id).to_dict())
+        elif args.command == "book-consolidate":
+            consolidator = (
+                OpenAIConsolidator(model=settings.consolidation_model)
+                if args.provider == "openai"
+                else DeterministicConsolidator()
+            )
+            _json(
+                library.consolidate(
+                    args.book_id,
+                    namespace=args.namespace,
+                    consolidator=consolidator,
+                    limit=args.limit,
+                    since=args.since,
+                ).to_dict()
+            )
         elif args.command == "serve-library":
             server = create_federation_server(library, host=args.host, port=args.port)
             print(f"Continuum Memory library listening on http://{args.host}:{args.port}")

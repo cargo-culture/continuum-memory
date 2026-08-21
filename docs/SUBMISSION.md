@@ -56,4 +56,6 @@ Long description:
 
 ## Release notes
 
-Continuum Memory 0.4.0 adds an OpenAI-compatible plugin package, bundled skill, OAuth 2.1 Streamable HTTP MCP server, opaque per-user namespace isolation, focused and annotated memory tools, production container packaging, public health and domain-verification routes, and review-ready documentation.
+Continuum Memory 0.5.0 bounds every model-facing response. Search returns the excerpt retrieval actually budgeted rather than full record content, `token_budget` is clamped, `read_memory` caps how much provenance a consolidated summary expands, and each record reports `is_excerpt` and `full_token_count` so a caller can see what it is holding. The memory kind is a schema enum rather than a free string, consolidation is reachable per book through `book-consolidate`, and the release version has a single source.
+
+Continuum Memory 0.4.0 added an OpenAI-compatible plugin package, bundled skill, OAuth 2.1 Streamable HTTP MCP server, opaque per-user namespace isolation, focused and annotated memory tools, production container packaging, public health and domain-verification routes, and review-ready documentation.

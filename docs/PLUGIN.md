@@ -1,6 +1,6 @@
 # OpenAI plugin
 
-Continuum 0.4.0 packages the memory library as an OpenAI-compatible plugin with a bundled skill and MCP server.
+Continuum 0.5.0 packages the memory library as an OpenAI-compatible plugin with a bundled skill and MCP server.
 
 ## Tool surface
 
@@ -14,6 +14,16 @@ Continuum 0.4.0 packages the memory library as an OpenAI-compatible plugin with 
 
 Caller namespaces are not model arguments. Local stdio derives the namespace from `CONTINUUM_NAMESPACE`; authenticated HTTP derives an opaque namespace from the validated OAuth issuer and subject.
 
+## Bounded payloads
+
+A memory tool that returns more context than it reports is worse than no memory tool, so every response is bounded and every bound is visible.
+
+`search_memory` returns each hit as the text retrieval actually budgeted for it — the summary when a record has one, the content otherwise — capped at 512 tokens per hit. `token_budget` is clamped to 8000 regardless of what the caller requests. The `used_tokens` field therefore describes the response that was sent, not a smaller notional one.
+
+`read_memory` is the deliberate expansion path and returns full record content, bounded at 4000 tokens. A consolidated summary can link to every memory in its batch, so a page expands at most 6 source records at 120 tokens each and returns up to 12 links in each direction. Counts are always exact: `source_memory_count`, `outgoing_link_count`, and `incoming_link_count` report the true totals, and `source_memory_ids` lists ids past the expansion limit so an unexpanded source stays reachable as a page of its own.
+
+Every returned record carries `is_excerpt` and `full_token_count`, so a caller can tell whether it is holding the whole record and what expanding it would cost.
+
 ## Local development
 
 Install the plugin extra and initialize the standard books:
@@ -24,6 +34,12 @@ python -m venv .venv
 pip install -e '.[plugin]'
 continuum-memory library-init
 continuum-memory-mcp --transport stdio
+```
+
+Books are independent stores, so consolidation runs per book:
+
+```bash
+continuum-memory --namespace local book-consolidate episodic --limit 50
 ```
 
 The repository root is a plugin package. `.codex-plugin/plugin.json` declares the skill and bundled `.mcp.json` server. The repository marketplace is at `.agents/plugins/marketplace.json`.
@@ -65,11 +81,11 @@ Terminate TLS at a trusted reverse proxy or application platform. Do not expose 
 The production image persists its library at `/var/lib/continuum`, serves a public `GET /health`, and exposes the portal's domain-verification response at `GET /.well-known/openai-apps-challenge` when `CONTINUUM_OPENAI_CHALLENGE_TOKEN` is set:
 
 ```bash
-docker build -t continuum-memory:0.4.0 .
+docker build -t continuum-memory:0.5.0 .
 docker run --rm -p 127.0.0.1:8000:8000 \
   --env-file .env.local \
   -v continuum-data:/var/lib/continuum \
-  continuum-memory:0.4.0
+  continuum-memory:0.5.0
 ```
 
 ## ChatGPT registration

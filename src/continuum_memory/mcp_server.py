@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 import os
 from typing import Any
 
+from . import __version__
 from .factory import create_federated_service
 from .mcp_auth import (
     authenticated_namespace,
@@ -13,7 +14,8 @@ from .mcp_auth import (
     oauth_configuration_from_env,
     require_write_scope,
 )
-from .plugin import ContinuumPluginAdapter
+from .models import MemoryKind
+from .plugin import MAX_TOKEN_BUDGET, ContinuumPluginAdapter
 
 
 SERVER_INSTRUCTIONS = (
@@ -55,7 +57,7 @@ def create_mcp_server(
         description="Persistent, specialized memory books for ChatGPT and Codex.",
         instructions=SERVER_INSTRUCTIONS,
         website_url="https://github.com/cargo-culture/continuum-memory",
-        version="0.4.0",
+        version=__version__,
         auth=auth,
         token_verifier=token_verifier,
         lifespan=lifespan,
@@ -63,7 +65,7 @@ def create_mcp_server(
 
     @server.custom_route("/health", methods=["GET"], include_in_schema=False)
     async def health(_request):
-        return JSONResponse({"status": "ok", "service": "continuum-memory", "version": "0.4.0"})
+        return JSONResponse({"status": "ok", "service": "continuum-memory", "version": __version__})
 
     @server.custom_route(
         "/.well-known/openai-apps-challenge",
@@ -81,7 +83,9 @@ def create_mcp_server(
         description=(
             "Search the caller's Continuum memory books for prior preferences, decisions, "
             "projects, events, facts, sources, or procedures relevant to the current request. "
-            "Use explicit book_ids only when routing must be constrained."
+            "Use explicit book_ids only when routing must be constrained. Results are excerpts "
+            f"bounded by token_budget, which is capped at {MAX_TOKEN_BUDGET}; read_memory expands "
+            "one record in full."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,
@@ -111,7 +115,9 @@ def create_mcp_server(
         title="Read memory",
         description=(
             "Read one memory page and its provenance. Use after search_memory when an available "
-            "page contains detail needed to answer accurately."
+            "page contains detail needed to answer accurately. Source records are listed in full "
+            "as source_memory_ids but only the first few are expanded; read those directly when "
+            "more provenance is needed."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,
@@ -147,7 +153,8 @@ def create_mcp_server(
         description=(
             "Store durable information that the user explicitly asks to remember or that is "
             "clearly useful in future conversations. Do not store secrets, filler, or tentative "
-            "speculation. Choose the narrowest appropriate memory book."
+            "speculation. Choose the narrowest appropriate memory book, and the kind that "
+            "describes the record itself rather than the book it lives in."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=False,
@@ -160,7 +167,7 @@ def create_mcp_server(
     def remember_memory(
         book_id: str,
         content: str,
-        kind: str = "semantic",
+        kind: MemoryKind = MemoryKind.SEMANTIC,
         summary: str | None = None,
         importance: float = 0.5,
         confidence: float = 1.0,

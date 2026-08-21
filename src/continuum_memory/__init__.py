@@ -1,5 +1,9 @@
 """Continuum Memory: persistent, provenance-aware memory for LLM systems."""
 
+# Single source of truth for the release. pyproject reads it, and the MCP
+# server, JSON API, and plugin manifest test all report this value.
+__version__ = "0.5.0"
+
 from .embeddings import HashingEmbedder, OpenAIEmbedder
 from .federation import (
     BookDefinition,
@@ -37,6 +41,5 @@ __all__ = [
     "PolicyRecord",
     "RecallHit",
     "SQLiteMemoryStore",
+    "__version__",
 ]
-
-__version__ = "0.4.0"

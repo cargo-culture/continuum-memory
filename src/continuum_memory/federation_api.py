@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+from . import __version__
 from .api import _memory_input
 from .federation import FederatedMemoryService
 
@@ -17,7 +18,7 @@ BOOK_PAGE_PATH = re.compile(r"^/v1/books/([^/]+)/pages/([^/]+)$")
 
 def make_federation_handler(service: FederatedMemoryService):
     class FederationRequestHandler(BaseHTTPRequestHandler):
-        server_version = "ContinuumMemory/0.4.0"
+        server_version = f"ContinuumMemory/{__version__}"
         max_body_bytes = 2_500_000
 
         def _send(self, status: int, payload: dict[str, Any] | list[Any]) -> None:

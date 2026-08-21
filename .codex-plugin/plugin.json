@@ -1,6 +1,6 @@
 {
   "name": "continuum-memory",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Persistent, specialized memory books for ChatGPT and Codex.",
   "author": {
     "name": "cargo-culture",

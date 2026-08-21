@@ -11,6 +11,7 @@ from continuum_memory import (
     FederatedMemoryService,
     HashingEmbedder,
     MemoryInput,
+    MemoryKind,
 )
 
 
@@ -68,6 +69,32 @@ class FederationTests(unittest.TestCase):
         )
         self.assertEqual(memory.id, packet.hits[0].memory.id)
         self.assertEqual("projects", packet.hits[0].book_id)
+
+    def test_consolidation_is_scoped_to_one_book(self) -> None:
+        self.library.create_standard_books()
+        for index in range(4):
+            self.library.remember(
+                "episodic",
+                MemoryInput(
+                    namespace="demo",
+                    kind=MemoryKind.EPISODIC,
+                    content=f"Episode {index}: the release checklist was reviewed.",
+                ),
+            )
+        self.library.remember(
+            "projects",
+            MemoryInput(namespace="demo", content="The project uses a cobalt scheduler."),
+        )
+
+        result = self.library.consolidate("episodic", namespace="demo", limit=10)
+
+        self.assertEqual(4, len(result.source_memory_ids))
+        summary = self.library.page(
+            "episodic", result.summary_memory_id, namespace="demo"
+        )
+        self.assertEqual(4, len(summary.source_memory_ids))
+        # Books are independent stores, so a batch never reaches across them.
+        self.assertNotIn("cobalt", summary.memory.content)
 
     def test_concurrent_searches_overlap(self) -> None:
         for book_id in ("alpha", "beta"):

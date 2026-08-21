@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "continuum-memory"
-version = "0.4.0"
+dynamic = ["version"]
 description = "A local-first persistent memory substrate for language models"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,6 +23,9 @@ continuum-memory-mcp = "continuum_memory.mcp_server:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "continuum_memory.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

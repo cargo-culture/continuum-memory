@@ -187,6 +187,7 @@ class MemoryPage:
     outgoing_links: list[dict[str, Any]]
     incoming_links: list[dict[str, Any]]
     source_memories: list[MemoryRecord]
+    source_memory_ids: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -194,6 +195,7 @@ class MemoryPage:
             "outgoing_links": self.outgoing_links,
             "incoming_links": self.incoming_links,
             "source_memories": [memory.to_dict() for memory in self.source_memories],
+            "source_memory_ids": list(self.source_memory_ids),
         }
 
 

@@ -1,7 +1,7 @@
 services:
   continuum-memory:
     build: .
-    image: continuum-memory:0.4.0
+    image: continuum-memory:0.5.0
     restart: unless-stopped
     ports:
       - "127.0.0.1:8000:8000"
