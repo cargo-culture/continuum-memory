@@ -86,7 +86,7 @@ Exact LSH buckets are queried first. If a semantic-only query has weak bucket co
 
 `FederatedMemoryService` composes independent `MemoryService` instances rather than placing every book behind one shared SQLite connection. The catalog persists book descriptors and routing embeddings; each `{book_id}.db` retains the complete single-book invariants.
 
-The query is embedded once, routed to a bounded set of books, and passed to each selected retriever as a precomputed vector. A thread pool overlaps their independent read paths. Cross-book reciprocal-rank fusion combines book rank, routing relevance, book priority, and the local hybrid score. Exact content hashes remove duplicate copies before a soft per-book quota and global token budget are applied.
+The query is embedded once, routed to a bounded set of books, and passed to each selected retriever as a precomputed vector. A thread pool overlaps their independent read paths. Cross-book fusion ranks on the local hybrid score, scaled by routing relevance and book priority. Books share one scorer, so their scores are comparable and rank-only fusion would discard that. Exact content hashes remove duplicate copies before a soft per-book quota and global token budget are applied.
 
 Book-qualified page references use `book_id:memory_id`. Provenance traversal remains within a book, avoiding ambiguous links and cross-database transactional claims.
 

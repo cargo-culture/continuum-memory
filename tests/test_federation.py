@@ -122,6 +122,31 @@ class FederationTests(unittest.TestCase):
         self.assertTrue(packet.searched_book_ids)
         self.assertEqual([], packet.hits)
 
+    def test_cross_book_ranking_follows_relevance_not_book_rank(self) -> None:
+        self.library.create_standard_books()
+        self.library.remember(
+            "identity",
+            MemoryInput(
+                namespace="demo", content="Alice prefers concise written summaries."
+            ),
+        )
+        match = self.library.remember(
+            "projects",
+            MemoryInput(
+                namespace="demo",
+                content="We chose SQLite with WAL mode for the Zephyr datastore.",
+            ),
+        )
+
+        packet = self.library.context("zephyr datastore", namespace="demo", limit=5)
+
+        # `identity` always searches and carries the higher book priority, so
+        # ranking on within-book position alone put its best hit first however
+        # little it matched. Books share one scorer, so the better hit wins.
+        self.assertIn("identity", packet.searched_book_ids)
+        self.assertEqual(match.id, packet.hits[0].memory.id)
+        self.assertGreater(packet.hits[0].features.lexical, 0.0)
+
     def test_concurrent_searches_overlap(self) -> None:
         for book_id in ("alpha", "beta"):
             self.library.create_book(

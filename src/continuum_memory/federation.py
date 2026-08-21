@@ -649,7 +649,12 @@ class FederatedMemoryService:
             priority = clamp(runtime.definition.priority / 2.0)
             book_weight = 0.60 + 0.30 * route.score + 0.10 * priority
             for book_rank, hit in enumerate(packet.hits, start=1):
-                raw_score = book_weight / (60 + book_rank) + 0.001 * hit.score
+                # Every book scores with the same retriever and weights, so hit
+                # scores are directly comparable and rank fusion would throw
+                # that away: rank alone made a book's best hit beat another
+                # book's, whatever the two were actually worth. The book prior
+                # stays as a multiplicative nudge, never as the deciding term.
+                raw_score = book_weight * hit.score
                 candidates.append(
                     (
                         raw_score,

@@ -26,10 +26,12 @@ Routing is scoped to the caller. A book holding nothing for the requesting names
 1. Embed the query once.
 2. Score book descriptors using keyword matches, lexical overlap, embedding similarity, priority, and always-search status.
 3. Search selected books concurrently through independent database connections.
-4. Combine per-book rankings through weighted reciprocal-rank fusion.
+4. Combine per-book results on their hybrid relevance scores, weighted by routing relevance and book priority.
 5. Remove exact cross-book content duplicates.
 6. Apply a soft per-book quota and one global token budget.
 7. Render book-qualified memory and page references into one context packet.
+
+Every book runs the same retriever with the same feature weights, so a hit's score means the same thing in each one and can be compared directly. Cross-book ranking therefore fuses on score rather than on within-book position: the book prior scales a hit, it never decides between two of them. Ranking on position alone let an always-search book's best hit outrank a far better match elsewhere purely because its book carried a slightly higher priority.
 
 The global budget remains 1,600 tokens by default. Adding books expands searchable storage; it does not expand simultaneous model attention or multiply the packet budget.
 
