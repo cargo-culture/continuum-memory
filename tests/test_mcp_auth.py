@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from continuum_memory.mcp_auth import IntrospectionTokenVerifier
+from continuum_memory.mcp_auth import IntrospectionTokenVerifier, require_write_scope
 
 
 class _Response:
@@ -72,6 +73,32 @@ class MCPAuthTests(unittest.IsolatedAsyncioTestCase):
             _Client.payload = payload
             with patch("httpx2.AsyncClient", _Client):
                 self.assertIsNone(await verifier.verify_token("opaque-token"))
+
+    def test_write_scope_fails_closed_without_an_authenticated_token(self) -> None:
+        with patch(
+            "mcp.server.auth.middleware.auth_context.get_access_token", return_value=None
+        ):
+            # Local stdio has no OAuth context and needs none.
+            require_write_scope(authenticated=False)
+            # Under an authenticated transport, a missing token means the request
+            # never passed the auth middleware.
+            with self.assertRaises(PermissionError):
+                require_write_scope(authenticated=True)
+
+    def test_write_scope_requires_the_write_scope(self) -> None:
+        read_only = SimpleNamespace(subject="user-1", scopes=["memory:read"], claims={})
+        writer = SimpleNamespace(
+            subject="user-1", scopes=["memory:read", "memory:write"], claims={}
+        )
+        with patch(
+            "mcp.server.auth.middleware.auth_context.get_access_token", return_value=read_only
+        ):
+            with self.assertRaises(PermissionError):
+                require_write_scope(authenticated=True)
+        with patch(
+            "mcp.server.auth.middleware.auth_context.get_access_token", return_value=writer
+        ):
+            require_write_scope(authenticated=True)
 
     def test_introspection_endpoint_requires_https(self) -> None:
         with self.assertRaises(ValueError):

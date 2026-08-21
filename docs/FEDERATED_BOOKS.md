@@ -19,6 +19,8 @@ Continuum 0.3 adds a first-class library of specialized memory books. Each book 
 
 The default router selects three books: the two always-on continuity books and the highest-scoring topical book. Explicit `book_ids` bypass automatic routing.
 
+Routing is scoped to the caller. A book holding nothing for the requesting namespace cannot produce a hit, so it does not consume a routing slot — including an always-search book. This matters most on a fresh library, where six of the eight standard books are empty and `working` and `identity` would otherwise take two of the three slots before any book with content is reached. When every book is empty the router returns its ordinary ranking, so the result is an empty packet rather than an error.
+
 ## Retrieval path
 
 1. Embed the query once.
@@ -89,5 +91,5 @@ Concurrent fan-out reduced all-book p95 by 35.5% relative to sequential search. 
 - Writes are atomic within a book, not across several books.
 - Exact duplicates are removed during retrieval, but contradictory claims in different books remain separate evidence.
 - Each book retains the 15,000-record exact-scan ceiling. A routed query can trigger scans in several selected books.
-- Book routing can miss a relevant collection. Explicit book selection is available for high-stakes or cross-domain requests.
+- Book routing can miss a relevant collection when several books hold content. Explicit book selection is available for high-stakes or cross-domain requests.
 - Cross-book multi-hop reasoning requires retrieved links or a later library-level graph index; provenance graphs currently remain local to each book.

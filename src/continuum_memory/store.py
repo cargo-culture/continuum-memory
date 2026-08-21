@@ -893,6 +893,16 @@ class SQLiteMemoryStore:
             ).fetchall()
         return self.get_memories(reversed([row["id"] for row in rows]))
 
+    def has_memories(self, namespace: str) -> bool:
+        """Index-seek existence check. Cheap enough for the routing hot path,
+        where a full count would be wasted work."""
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT 1 FROM memories WHERE namespace = ? AND status = 'active' LIMIT 1",
+                (namespace,),
+            ).fetchone()
+        return row is not None
+
     def touch_memories(self, memory_ids: Sequence[str], at: float | None = None) -> None:
         ids = list(dict.fromkeys(memory_ids))
         if not ids:

@@ -96,6 +96,32 @@ class FederationTests(unittest.TestCase):
         # Books are independent stores, so a batch never reaches across them.
         self.assertNotIn("cobalt", summary.memory.content)
 
+    def test_routing_skips_books_that_are_empty_for_the_caller(self) -> None:
+        self.library.create_standard_books()
+        self.library.remember(
+            "projects",
+            MemoryInput(
+                namespace="demo",
+                content="Decision: the rollback plan runs before every release.",
+            ),
+        )
+
+        # `working` and `identity` always search and outrank `projects` on this
+        # query, so without the empty-book filter they consume the budget and
+        # the only book with content is never reached.
+        unscoped = [route.book_id for route in self.library.route("rollback plan")]
+        self.assertNotIn("projects", unscoped)
+
+        packet = self.library.context("rollback plan", namespace="demo", limit=5)
+        self.assertEqual(["projects"], packet.searched_book_ids)
+        self.assertEqual(1, len(packet.hits))
+
+    def test_routing_falls_back_when_every_book_is_empty(self) -> None:
+        self.library.create_standard_books()
+        packet = self.library.context("rollback plan", namespace="nobody", limit=5)
+        self.assertTrue(packet.searched_book_ids)
+        self.assertEqual([], packet.hits)
+
     def test_concurrent_searches_overlap(self) -> None:
         for book_id in ("alpha", "beta"):
             self.library.create_book(

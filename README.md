@@ -56,7 +56,7 @@ continuum-memory --namespace demo library-recall \
   "What coordinates Zephyr deployments?"
 ```
 
-The standard router searches `working` and `identity` for continuity plus the strongest topical book. Selected books use separate SQLite connections and run concurrently. Results are deduplicated and fused into one globally budgeted context packet. See [Federated memory books](docs/FEDERATED_BOOKS.md).
+The standard router searches `working` and `identity` for continuity plus the strongest topical book, skipping any book that holds nothing for the caller. Selected books use separate SQLite connections and run concurrently. Results are deduplicated and fused into one globally budgeted context packet. See [Federated memory books](docs/FEDERATED_BOOKS.md).
 
 ## ChatGPT and Codex plugin
 
@@ -87,6 +87,12 @@ export CONTINUUM_EMBEDDING_DIMENSIONS=512
 
 continuum-memory --namespace demo reindex
 continuum-memory --namespace demo consolidate --provider openai
+```
+
+Books are independent stores, so a library consolidates one book at a time:
+
+```bash
+continuum-memory --namespace demo book-consolidate episodic --provider openai
 ```
 
 Keep `OPENAI_API_KEY` in a private `.env.local` file. The application searches the current directory and its nearest parents without logging secret values.

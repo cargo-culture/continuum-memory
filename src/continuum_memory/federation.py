@@ -477,6 +477,7 @@ class FederatedMemoryService:
         self,
         query: str,
         *,
+        namespace: str | None = None,
         context_entities: Sequence[str] = (),
         book_ids: Sequence[str] | None = None,
         max_books: int | None = None,
@@ -552,7 +553,20 @@ class FederatedMemoryService:
             ),
             reverse=True,
         )
-        return routes[: max(1, max_books or self.max_books)]
+        limit = max(1, max_books or self.max_books)
+        if namespace is None:
+            return routes[:limit]
+        # A book holding nothing for this caller cannot produce a hit, and the
+        # standard library starts with six of the eight empty. Spending the
+        # routing budget on them is how a memory the caller just stored becomes
+        # unfindable: `working` and `identity` always search, so an empty pair
+        # can consume most of the budget before a book with content is reached.
+        populated = [
+            route
+            for route in routes
+            if self._books[route.book_id].service.store.has_memories(namespace)
+        ]
+        return (populated or routes)[:limit]
 
     def recall(
         self,
@@ -588,6 +602,7 @@ class FederatedMemoryService:
             query_vector = []
         routes = self.route(
             query,
+            namespace=namespace,
             context_entities=context_entities,
             book_ids=book_ids,
             max_books=max_books,

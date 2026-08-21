@@ -28,11 +28,19 @@ def authenticated_namespace() -> str:
     return "oauth-" + hashlib.sha256(principal).hexdigest()[:40]
 
 
-def require_write_scope() -> None:
+def require_write_scope(*, authenticated: bool = False) -> None:
     from mcp.server.auth.middleware.auth_context import get_access_token
 
     token = get_access_token()
-    if token is not None and WRITE_SCOPE not in token.scopes:
+    if token is None:
+        # Local stdio carries no OAuth context and needs none. Under an
+        # authenticated transport a missing token means the request reached the
+        # tool without passing the auth middleware, which is never permission
+        # to write.
+        if authenticated:
+            raise PermissionError("an authenticated access token is required")
+        return
+    if WRITE_SCOPE not in token.scopes:
         raise PermissionError(f"the {WRITE_SCOPE!r} OAuth scope is required")
 
 

@@ -42,6 +42,8 @@ def create_mcp_server(
         raise RuntimeError("install Continuum with the 'plugin' extra to run its MCP server") from exc
 
     adapter.initialize()
+    # Writes must fail closed whenever an authorization server is configured.
+    authenticated = auth is not None
 
     @asynccontextmanager
     async def lifespan(_server):
@@ -175,7 +177,7 @@ def create_mcp_server(
         tags: list[str] | None = None,
         source_uri: str | None = None,
     ) -> dict[str, Any]:
-        require_write_scope()
+        require_write_scope(authenticated=authenticated)
         return adapter.remember_memory(
             book_id,
             content,
@@ -210,7 +212,7 @@ def create_mcp_server(
         confidence: float | None = None,
         source_uri: str | None = None,
     ) -> dict[str, Any]:
-        require_write_scope()
+        require_write_scope(authenticated=authenticated)
         return adapter.supersede_memory(
             book_id,
             memory_id,
